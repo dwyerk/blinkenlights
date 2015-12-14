@@ -9,7 +9,7 @@ import random
 class Rainbow(BaseStripAnim):
     """Generate rainbow distributed over 256 pixels.
        If you want the full rainbow to fit in the number of pixels you
-       are using, use RainbowCycle instead 
+       are using, use RainbowCycle instead
     """
 
     def __init__(self, led, start=0, end=-1):
@@ -266,7 +266,7 @@ class WaveMove(BaseStripAnim):
                 (math.pi *
                 float(self._cycles) *
                 float(i) /
-                float(self._size)) 
+                float(self._size))
                 + self._moveStep)
 
             if y >= 0.0:
@@ -306,7 +306,7 @@ class RGBClock(BaseStripAnim):
         self._mEnd = mEnd
         self._sStart = sStart
         self._sEnd = sEnd
-        
+
 
     def step(self, amt = 1):
         t = time.localtime()
@@ -322,3 +322,38 @@ class RGBClock(BaseStripAnim):
 
         self._step = 0
 
+class PingPong(BaseStripAnim):
+    def __init__(self, led, duration=100, start=0, end=-1):
+        super(PingPong, self).__init__(led, start, end)
+        self.duration = duration
+        self.reverse = False
+        self.goal_size = self._led.numLEDs / 8
+        self.blue_goal = [int(i) for i in range(0, self.goal_size)]
+        self.blue_min = int(self.goal_size * (.6))
+        self.red_goal = [int(i) for i in range(self._led.numLEDs - self.goal_size, self._led.numLEDs)]
+        self.red_min = int(self._led.numLEDs - (self.goal_size * (.6)))
+        self.last_idx = self.blue_min
+        self.speed = 0.05
+
+    def step(self, amt=1):
+        for i in self.blue_goal:
+            self._led.set(i, colors.Blue)
+        for i in self.red_goal:
+            self._led.set(i, colors.Red)
+        if self.reverse:
+            i = self.last_idx - amt
+        else:
+            i = self.last_idx + amt
+        if i in self.red_goal:
+            color = colors.Red
+        elif i in self.blue_goal:
+            color = colors.Blue
+        else:
+            color = colors.White
+        self._led.set(i, color)
+        if i not in self.blue_goal and i not in self.red_goal:
+            self._led.setOff(self.last_idx)
+        if i == self.blue_min or i == self.red_min:
+            self.reverse = not self.reverse
+        self.last_idx = i
+        time.sleep(self.speed)
