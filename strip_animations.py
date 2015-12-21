@@ -357,3 +357,45 @@ class PingPong(BaseStripAnim):
             self.reverse = not self.reverse
         self.last_idx = i
         time.sleep(self.speed)
+
+
+class BinarySearch(BaseStripAnim):
+    def __init__(self, led):
+        super(BinarySearch, self).__init__(led, 0, -1)
+
+        self.color = colors.Blue
+        self.sleeptime = 0.1
+
+    def random_color(self):
+        r = random.randint(0, 255)
+        g = random.randint(0, 255)
+        b = random.randint(0, 255)
+        return (r,g,b)
+
+    def split(self, minled, maxled):
+
+        # Find the middle, light that sheite up
+        diff = (maxled - minled)
+
+        # Unless they're next to each other
+        if diff <= 1:
+            self._led.set(maxled, self.color)
+            self._led.set(minled, self.color)
+            self._led.update()
+            return
+
+        center = int(minled + (diff/2))
+
+        self._led.set(center, self.color)
+        self._led.update()
+
+        # Otherwise split again on both our halves
+        time.sleep(self.sleeptime)
+        self.split(minled, center)
+        self.split(center, maxled)
+
+    def step(self, amt=1):
+        self.color = self.random_color()
+        self.split(0, self._led.numLEDs-1)
+        time.sleep(self.sleeptime)
+        self._led.all_off()
