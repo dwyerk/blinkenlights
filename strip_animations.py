@@ -358,7 +358,6 @@ class PingPong(BaseStripAnim):
         self.last_idx = i
         time.sleep(self.speed)
 
-
 class BinarySearch(BaseStripAnim):
     def __init__(self, led):
         super(BinarySearch, self).__init__(led, 0, -1)
@@ -399,3 +398,113 @@ class BinarySearch(BaseStripAnim):
         self.split(0, self._led.numLEDs-1)
         time.sleep(self.sleeptime)
         self._led.all_off()
+
+def rgb2hsv(rgb):
+    """
+    Compute Hue, Saturation, Value for a given RGB tuple.
+
+    Based on these formulas: http://www.rapidtables.com/convert/color/rgb-to-hsv.htm
+
+    :param rgb: red, green, blue tuple
+    :return: hue, saturation, value tuple
+    """
+
+    red = rgb[0]/255.0
+    green = rgb[1]/255.0
+    blue = rgb[2]/255.0
+    color_max = max(red, green, blue)
+    color_min = min(red, green, blue)
+    delta = color_max - color_min
+
+    if color_max == 0:
+        saturation = 0
+    else:
+        saturation = delta / color_max
+
+    # hue calculation
+    if delta == 0:
+        hue = 0
+    elif red == color_max:
+        hue = (green - blue) / delta
+    elif green == color_max:
+        hue = 2.0 + (blue - red) / delta
+    elif blue == color_max:
+        hue = 4.0 + (red - green) / delta
+
+    hue = 60.0 * hue
+
+    value = color_max
+
+    return tuple(int(round(v)) for v in (hue, saturation, value))
+
+class BubbleSort(BaseStripAnim):
+    """
+    Generate a random array of colors, sort them into a rainbow.
+    """
+    SORTING = 0
+    FADING = 1
+    INITING = 2
+    SLEEP_SORT = 0.05
+    SLEEP_INIT = 0.1
+    SLEEP_FADE = 0.001
+
+    def __init__(self, led, start=0, end=-1):
+        super(BubbleSort, self).__init__(led, start, end)
+        self.init()
+        self.state = self.INITING
+        self.fade_step = 0
+        self.init_step = 0
+
+    def init(self):
+        self.items = [colors.hue_helper(x, self._size, 0) for x in range(self._size)]
+        random.shuffle(self.items)
+
+    def step(self, amt = 1):
+        for i, item in enumerate(self.items):
+            self._led.set(i, item)
+
+        if self.state == self.INITING:
+            if self.init_step == 0:
+                # let the blank linger
+                time.sleep(1)
+
+            # print('init')
+            if self.init_step > 10:
+                self.state = self.SORTING
+                self.init_step = 0
+            else:
+                self.init_step += 1
+                time.sleep(self.SLEEP_INIT)
+
+        elif self.state == self.SORTING:
+            # print('sorting')
+            last = self.items[0]
+            swaps = False
+            for i, item in enumerate(self.items):
+                hue_item = rgb2hsv(item)[0]
+                hue_last = rgb2hsv(last)[0]
+                if hue_item < hue_last:
+                    swaps = True
+                    self.items[i-1] = item
+                    self._led.set(i-1, item)
+                    self.items[i] = last
+                    self._led.set(i, last)
+                    time.sleep(self.SLEEP_SORT)
+                    break
+                last = self.items[i]
+            if not swaps:
+                self.state = self.FADING
+
+        else:
+            # print('fading')
+            self.fade_step += 1
+            if self.fade_step > 200:
+                self._led.all_off()
+                # print('done')
+                self.init()
+                self.state = self.INITING
+                self.fade_step = 0
+            else:
+                for i, item in enumerate(self.items):
+                    self._led.set(i, colors.color_scale(item, 255 - (self.fade_step)))
+                time.sleep(self.SLEEP_FADE)
