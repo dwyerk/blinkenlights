@@ -8,6 +8,6 @@ import strip_animations as sa
 
 speed = 16.0
 led = LEDStrip(DriverVisualizer(32))
-anim = sa.PingPong(led)
+anim = sa.BubbleSort(led)
 
 anim.run()
