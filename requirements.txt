@@ -1,2 +1,2 @@
-bibliopixel
+bibliopixel<=3
 nose
