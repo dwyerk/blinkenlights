@@ -51,6 +51,9 @@ orange = (0,255,109)
 red = (0,255,0)
 
 blue = (255, 25, 127)
+white = (255, 255, 255)
+black = (0, 0, 0)
+green = (0, 0, 255)
 
 thanksgiving = [(00,102,51), (00,204,153), (00,204,102)]
 
@@ -71,53 +74,31 @@ led = LEDStrip(DriverLPD8806(32*5, dev="/dev/spidev0.0", SPISpeed=speed))
 #anim = Halloween1(led)
 
 from strip_animations import *
-anim = RainbowCycle(led)
+#anim = RainbowCycle(led)
 #anim = ColorPattern(led, [purple, orange], 10)
 #anim = ColorPattern(led, thanksgiving, 32)
-anim = ColorFade(led, [blue], 2) # maybe?
+anim = ColorFade(led, [green, red], 2) # maybe?
 #anim = ColorFade(led, thanksgiving, 3)
 #anim = ColorChase(led, orange, 10)
-anim = FireFlies(led, [blue, red], width=3, count=2)
+#anim = FireFlies(led, [blue, red], width=3, count=2)
 #anim = LarsonScanner(led, blue, 10) # cat toy
 #anim = LarsonScanner(led, orange, 10) # cat toy
 #anim = Kitt(led)
 #anim = LarsonRainbow(led)
 #anim = Wave(led, blue, 1)
 #anim = WaveMove(led, blue, 1)
-anim = RGBClock(led, 0, 30, 51, 70, 90, 160)
-
-class PixelPingPong(BaseStripAnim):
-
-    def __init__(self, led, max_led=None, color=(255, 255, 255), total_pixels=1):
-        super(PixelPingPong, self).__init__(led, 0, -1)
-        self._current = 0
-        self._minLed = 0
-        self._maxLed = max_led
-        if self._maxLed == None or self._maxLed < self._minLed:
-            self._maxLed = self._led.lastIndex
-        self._additionalPixels = total_pixels - 1
-        self._positive = True
-        self._color = color
-
-    def step(self, amt=1):
-        self._led.fill((0, 0, 0), 0, self._maxLed)
-
-        self._led.fill(
-            self._color, self._current, self._current + self._additionalPixels)
-
-        if self._positive:
-            self._current += 1
-        else:
-            self._current -= 1
-
-        if self._current + self._additionalPixels == self._maxLed:
-            self._positive = False
-
-        if self._current == self._minLed:
-            self._positive = True
+#anim = RGBClock(led, 0, 30, 51, 70, 90, 160)
 
 
-#anim = PixelPingPong(led, color=(30,100,20), total_pixels=20)
+import penner
+import inspect
+all_named_colors = [(x[1][2], x[1][0], x[1][1]) for x in inspect.getmembers(colors) if isinstance(x[1],tuple)]
+#anim = penner.OutBounce(led, 2500, all_named_colors, alternating=False)
+
+#anim = PingPong(led, 5)
+#anim = BinarySearch(led)
+#anim = BubbleSort(led)
+anim = Christmas(led)
 
 try:
     anim.run()
@@ -130,3 +111,4 @@ except:
     anim = Clear(led)
     anim.run(max_steps=1)
 
+    raise

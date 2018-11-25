@@ -444,7 +444,7 @@ class BubbleSort(BaseStripAnim):
     SORTING = 0
     FADING = 1
     INITING = 2
-    SLEEP_SORT = 0.05
+    SLEEP_SORT = 0.005
     SLEEP_INIT = 0.1
     SLEEP_FADE = 0.001
 
@@ -489,7 +489,7 @@ class BubbleSort(BaseStripAnim):
                     self._led.set(i-1, item)
                     self.items[i] = last
                     self._led.set(i, last)
-                    time.sleep(self.SLEEP_SORT)
+                    #time.sleep(self.SLEEP_SORT)
                     break
                 last = self.items[i]
             if not swaps:
@@ -504,7 +504,22 @@ class BubbleSort(BaseStripAnim):
                 self.init()
                 self.state = self.INITING
                 self.fade_step = 0
+                self.animComplete = True
             else:
                 for i, item in enumerate(self.items):
                     self._led.set(i, colors.color_scale(item, 255 - (self.fade_step)))
                 time.sleep(self.SLEEP_FADE)
+
+class Christmas(BaseStripAnim):
+    def step(self, amt=1):
+        red = (0, 255, 0)
+        green = (0, 0, 200)
+        white = (255, 255, 255)
+        colors = [red, white, green, white]
+        for i in range(self._led.numLEDs):
+            #self._led.set(i, red if (i + self._step) % 2 else green) 
+            self._led.set(i, colors[(i + self._step) % len(colors)]) 
+
+        self._step += amt
+        time.sleep(1)
+
